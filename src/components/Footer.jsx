@@ -1,11 +1,14 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React from "react";
+import logoGitHub from "../assets/images/logo-github.svg";
+import logoLinkedin from "../assets/images/logo-linkedin.svg";
 
 const Footer = () => {
   return (
     <footer className="footer">
       <div className="footer__container">
-        <p className="footer__copy">© 2025 Personal Blog - All rights reserved</p>
+        <p className="footer__copy">
+          © 2025 Personal Blog - All rights reserved
+        </p>
 
         <ul className="footer__list">
           <li className="footer__item">
@@ -15,7 +18,7 @@ const Footer = () => {
               rel="noopener noreferrer"
               className="footer__link"
             >
-              <img src="/src/assets/images/logo-github.svg" alt="GitHub" />
+              <img src={logoGitHub} alt="GitHub" />
             </a>
           </li>
           <li className="footer__item">
@@ -25,13 +28,13 @@ const Footer = () => {
               rel="noopener noreferrer"
               className="footer__link"
             >
-              <img src="/src/assets/images/logo-linkedin.svg" alt="LinkedIn" />
+              <img src={logoLinkedin} alt="LinkedIn" />
             </a>
           </li>
         </ul>
       </div>
     </footer>
-  )
-}
+  );
+};
 
-export default Footer
+export default Footer;
