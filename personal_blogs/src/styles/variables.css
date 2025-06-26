@@ -181,17 +181,13 @@
   --bg-category: var(--blue-200);
   --text-category: var(--blue-900);
 
-  --bg-info: var(--blue-200);
-  --text-info: var(--blue-900);
-
-  --bg-warning: var(--yellow-200);
-  --text-warning: var(--yellow-900);
-
+  /* BLOG DETAIL SPECIAL BLOCKS */
   --bg-tip: var(--green-200);
-  --text-tip: var(--green-900);
-
-  --bg-success: var(--green-200);
-  --text-success: var(--green-900);
+  --text-tip: var(--green-700);
+  --bg-info: var(--blue-200);
+  --text-info: var(--blue-800);
+  --bg-warning: var(--yellow-200);
+  --text-warning: var(--yellow-700);
 
   --border-quote: var(--neutral-300);
   --border-default: var(--neutral-200);

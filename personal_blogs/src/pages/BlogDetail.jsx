@@ -1,131 +1,140 @@
-import React from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
-import { getPostBySlug, blogPosts } from '../utils/blogData'
-import { marked } from 'marked'
-import '../styles/blog-detail.css'
-import '../styles/articles.css'
-import '../styles/prism.css'
-import '../styles/hover-focus.css'
-import '../styles/variables.css'
-import '../styles/style.css'
-import '../styles/responsive.css'
+import React from "react";
+import ReactMarkdown from "react-markdown";
+import { Link, useParams } from "react-router-dom";
+import { blogPosts, getPostBySlug } from "../utils/blogData";
+
+import remarkGfm from "remark-gfm";
+
+
+import "../styles/articles.css";
+import "../styles/hover-focus.css";
+import "../styles/prism.css";
+import "../styles/reset.css";
+import "../styles/responsive.css";
+import "../styles/style.css";
+import "../styles/variables.css";
 
 const BlogDetail = () => {
-  const { slug } = useParams()
-  const navigate = useNavigate()
-  const post = getPostBySlug(slug)
+  const { slug } = useParams();
+  const post = getPostBySlug(slug);
 
   if (!post) {
-    navigate('/blog')
-    return null
+    return (
+      <main className="main">
+        <section className="article">
+          <h1 className="article__title">Post Not Found</h1>
+          <p className="article__date">
+            The article you're looking for doesn't exist.
+          </p>
+          <Link to="/blog" className="blog-detail__nav-link">
+            ← Back to Blog
+          </Link>
+        </section>
+      </main>
+    );
   }
 
-  // Find previous and next posts
-  const currentIndex = blogPosts.findIndex(p => p.slug === slug)
-  const prevPost = currentIndex > 0 ? blogPosts[currentIndex - 1] : null
-  const nextPost = currentIndex < blogPosts.length - 1 ? blogPosts[currentIndex + 1] : null
 
-  // Render markdown content as HTML
-  const renderContent = (content) => {
-    if (!content) return null
+  const currentIndex = blogPosts.findIndex((p) => p.slug === slug);
+  const prevPost = currentIndex > 0 ? blogPosts[currentIndex - 1] : null;
+  const nextPost =
+    currentIndex < blogPosts.length - 1 ? blogPosts[currentIndex + 1] : null;
 
-    // Enhance markdown rendering for tips, warnings, and info blocks
-    const enhancedContent = content
-      .replace(/> \*\*Tip:\*\*/g, '<div class="article__tip">')
-      .replace(/> \*\*Warning:\*\*/g, '<div class="article__warning">')
-      .replace(/> \*\*Info:\*\*/g, '<div class="article__info">')
-      .replace(/\n---\n/g, '<hr />')
 
-    return <div className="article__content" dangerouslySetInnerHTML={{ __html: marked.parse(enhancedContent) }} />
+  let formattedDate = '';
+  try {
+    formattedDate = post && post.publishedAt
+      ? new Intl.DateTimeFormat("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        }).format(new Date(post.publishedAt))
+      : '';
+  } catch (e) {
+    formattedDate = post && post.publishedAt ? post.publishedAt : '';
   }
+
+
+  const renderers = {
+    h1: ({ children }) => <h1 className="article__heading">{children}</h1>,
+    h2: ({ children }) => <h2 className="article__heading">{children}</h2>,
+    h3: ({ children }) => <h3 className="article__subheading">{children}</h3>,
+    p: ({ children }) => <p className="article__paragraph">{children}</p>,
+    ul: ({ children }) => <ul className="article__list">{children}</ul>,
+    li: ({ children }) => <li className="article__list-item">{children}</li>,
+    blockquote: ({ children }) => {
+      let text = "";
+      if (Array.isArray(children)) {
+        text = children
+          .map((child) => {
+            if (typeof child === "string") return child;
+            if (child && child.props && child.props.children) {
+              if (typeof child.props.children === "string")
+                return child.props.children;
+              if (Array.isArray(child.props.children))
+                return child.props.children.join("");
+            }
+            return "";
+          })
+          .join("");
+      } else if (typeof children === "string") {
+        text = children;
+      }
+      const tipMatch = text.match(/^\s*\*\*Tip:\*\*\s*(.*)$/i);
+      const warningMatch = text.match(/^\s*\*\*Warning:\*\*\s*(.*)$/i);
+      const infoMatch = text.match(/^\s*\*\*Info:\*\*\s*(.*)$/i);
+      if (tipMatch) {
+        return <div className="article__tip"><img src={require('../assets/images/icon-tip.svg')} alt="Tip" style={{marginRight: '0.8rem', width: '1.8rem', height: '1.8rem'}} />{tipMatch[1]}</div>;
+      }
+      if (warningMatch) {
+        return <div className="article__warning">{warningMatch[1]}</div>;
+      }
+      if (infoMatch) {
+        return <div className="article__info">{infoMatch[1]}</div>;
+      }
+      return <blockquote className="article__quote">{children}</blockquote>;
+    },
+  };
 
   return (
     <>
       <main className="main">
         <section className="article">
           <h1 className="article__title">{post.title}</h1>
-          <p className="article__date">{post.date}</p>
-          {renderContent(post.content)}
+          <p className="article__date">{formattedDate}</p>
+          <div className="article__content">
+            <ReactMarkdown
+              children={post.content}
+              remarkPlugins={[remarkGfm]}
+              components={renderers}
+            />
+          </div>
+
           <nav className="blog-detail__navigation">
-            {prevPost && (
-              <Link to={`/blog/${prevPost.slug}`} className="blog-detail__nav-link">
-                ← {prevPost.title}
-              </Link>
-            )}
-            {nextPost && (
-              <Link to={`/blog/${nextPost.slug}`} className="blog-detail__nav-link">
-                {nextPost.title} →
-              </Link>
-            )}
+            <div className="blog-detail__nav-wrapper">
+              {prevPost && (
+                <Link
+                  to={`/blog/${prevPost.slug}`}
+                  className="blog-detail__nav-link"
+                >
+                  ← {prevPost.title}
+                </Link>
+              )}
+              {nextPost && (
+                <Link
+                  to={`/blog/${nextPost.slug}`}
+                  className="blog-detail__nav-link"
+                >
+                  {nextPost.title} →
+                </Link>
+              )}
+            </div>
           </nav>
         </section>
       </main>
-
-      <footer className="footer">
-        <p className="footer__text">Made with ❤️ and ☕</p>
-        <ul className="footer__list">
-          <li className="footer__item">
-            <a href="#X" className="footer__item-link">
-              <img
-                src="../assets/images/logo-x.svg"
-                alt="My X/Twitter page"
-                className="footer__social"
-              />
-            </a>
-          </li>
-          <li className="footer__item">
-            <a href="#GitHub" className="footer__item-link">
-              <img
-                src="../assets/images/logo-github.svg"
-                alt="My GitHub page"
-                className="footer__social"
-              />
-            </a>
-          </li>
-          <li className="footer__item">
-            <a href="#Linkedin" className="footer__item-link">
-              <img
-                src="../assets/images/logo-linkedin.svg"
-                alt="My Linkedin page"
-                className="footer__social"
-              />
-            </a>
-          </li>
-          <li className="footer__item">
-            <a href="#FrontendMentor" className="footer__item-link">
-              <img
-                src="../assets/images/logo-frontend-mentor.svg"
-                alt="My Frontend Mentor page"
-                className="footer__social"
-              />
-            </a>
-          </li>
-        </ul>
-
-        <div className="attribution">
-          Challenge by
-          <a
-            href="https://www.frontendmentor.io?ref=challenge"
-            target="_blank"
-            className="attribution__link"
-          >
-            Frontend Mentor
-          </a>
-          . Coded by
-          <a
-            href="https://xuaun.github.io/"
-            target="_blank"
-            className="attribution__link"
-          >
-            João Víctor de Araujo Lima
-          </a>
-          .
-        </div>
-      </footer>
-
       <div className="background after"></div>
     </>
-  )
-}
+  );
+};
 
-export default BlogDetail
+export default BlogDetail;
